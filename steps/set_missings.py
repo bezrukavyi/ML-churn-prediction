@@ -1,8 +1,4 @@
-import numpy as np
-import pandas as pd
-
-
-def process_missings(dataframe):
+def set_missings(dataframe):
     dataframe = dataframe.copy()
 
     # Remove data with unsupported type (totally blank series)
@@ -60,19 +56,12 @@ def process_missings(dataframe):
 
     MISSING_INDEX = 0
 
+    # Fill missing values with 0 for columns with int dtype
     columns_with_int_dtype = dataframe.select_dtypes(include=["int64", "int32", "float64"]).columns
     highly_missing_columns = dataframe.isnull().mean() * 100
     highly_missing_columns = highly_missing_columns[highly_missing_columns > MISSING_INDEX].index
 
     highly_missing_int_columns = set(highly_missing_columns) & set(columns_with_int_dtype)
-
-    # data = pd.DataFrame()
-
-    # for col in highly_missing_int_columns:
-    #     series_to_concat = describe_series(dataframe[col])
-    #     data = pd.concat([data, series_to_concat])
-
-    # print(data)
 
     dataframe[list(highly_missing_int_columns)] = dataframe[list(highly_missing_int_columns)].fillna(0)
 

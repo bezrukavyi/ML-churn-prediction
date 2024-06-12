@@ -61,9 +61,9 @@ if __name__ == "__main__":
     print("Best trial:")
     trial = study.best_trial
 
-    print("  Value: {}".format(trial.value))
+    print("Value: {}".format(trial.value))
 
-    print("  Params: ")
+    print("Params: ")
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
 
