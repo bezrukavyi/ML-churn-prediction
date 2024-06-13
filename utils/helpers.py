@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 import logging
+import optuna
 import time
 
 
@@ -39,3 +40,14 @@ class Logger(metaclass=SingletonMeta):
 
     def get_logger(self):
         return self.logger
+
+
+def create_or_load_optuna_study(*, study_name, storage, direction, **extra_args):
+    study_summaries = optuna.get_all_study_summaries(storage)
+    for study_summary in study_summaries:
+        if study_summary.study_name == study_name:
+            print(f"Loading existing study: {study_name}")
+            return optuna.load_study(study_name=study_name, storage=storage)
+
+    print(f"Creating new study: {study_name}")
+    return optuna.create_study(study_name=study_name, storage=storage, direction=direction)

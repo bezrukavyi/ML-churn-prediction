@@ -1,2 +1,7 @@
 data
 __pycache__
+.docker
+init.sql
+initdb
+train_data.pkl
+cache
