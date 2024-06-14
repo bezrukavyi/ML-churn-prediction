@@ -12,6 +12,8 @@ import sklearn.datasets
 import sklearn.metrics
 from sklearn.model_selection import train_test_split
 from datetime import datetime
+from imblearn.over_sampling import SMOTE
+from collections import Counter
 
 
 hostname = "127.0.0.1"
@@ -22,36 +24,47 @@ database = "example"
 mysql_connection_string = f"mysql://{username}:{password}@{hostname}:{port}/{database}"
 
 
-class LightGbmV1:
+class LightGbmV2:
     def __init__(self):
         pass
 
     def train(self, *, data, version=1.0):
+        smote = SMOTE(sampling_strategy="minority", random_state=42)
+        train_data, test_data = data
+
+        train_x = train_data.drop("target", axis=1)
+        train_y = train_data.target
+
+        valid_x = test_data.drop("target", axis=1)
+        valid_y = test_data.target
+
+        smote = SMOTE(sampling_strategy="minority", random_state=42)
+        resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+
+        counter = Counter(resampled_y)
+        neg = counter[0]
+        pos = counter[1]
+        scale_pos_weight = neg / pos
+
+        print(scale_pos_weight)
+
         static_params = {
             "objective": "binary",
             "metric": "auc",
             "verbosity": -1,
             "boosting_type": "gbdt",
-            "is_unbalance": True,
+            "scale_pos_weight": scale_pos_weight,
         }
 
         def objective(trial):
-            train_data, test_data = data
-
-            train_x = train_data.drop("target", axis=1)
-            train_y = train_data.target
-
-            valid_x = test_data.drop("target", axis=1)
-            valid_y = test_data.target
-
-            dtrain = lgb.Dataset(train_x, label=train_y)
+            dtrain = lgb.Dataset(resampled_x, label=resampled_y)
             dvalid = lgb.Dataset(valid_x, label=valid_y)
 
             param = {
                 **static_params,
                 "lambda_l1": trial.suggest_float("lambda_l1", 1e-8, 10.0, log=True),
                 "lambda_l2": trial.suggest_float("lambda_l2", 1e-8, 10.0, log=True),
-                "learning_rate": [0.01, 0.05, 0.1, 0.2, 0.3][trial.suggest_int("learning_rate", 0, 4)],
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.1),
                 "num_leaves": trial.suggest_int("num_leaves", 2, 256),
                 "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
                 "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
@@ -77,10 +90,10 @@ class LightGbmV1:
             return f1_score
 
         try:
-            study_name = f"LightGbmV1_{version}"
+            study_name = f"LightGbmV2_{version}"
 
             study = create_or_load_optuna_study(
-                study_name=f"LightGbmV1_{version}",
+                study_name=f"LightGbmV2_{version}",
                 storage=mysql_connection_string,
                 direction="maximize",
             )

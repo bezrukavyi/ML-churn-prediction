@@ -4,4 +4,4 @@ from studies.lightgbm_v1 import LightGbmV1
 
 # process_data()
 
-LightGbmV1().train(data=load_processed_data(), version="refactoring_v2")
+LightGbmV1().train(data=load_processed_data(), version="hyperparemeter_optimization_14_06_2024_v4")

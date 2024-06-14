@@ -1,0 +1,13 @@
+{
+  "objective": "binary",
+  "metric": "auc",
+  "verbosity": -1,
+  "boosting_type": "gbdt",
+  "is_unbalance": true,
+  "lambda_l1": 0.013072253727832299,
+  "num_leaves": 223,
+  "feature_fraction": 0.6826606579966396,
+  "bagging_fraction": 0.6659462005148293,
+  "max_depth": 45,
+  "min_child_samples": 84
+}
