@@ -88,16 +88,7 @@ class LightGbmV1:
             study.optimize(objective, n_trials=20)
 
         finally:
-            print("Number of finished trials: {}".format(len(study.trials)))
-
-            print("Best trial:")
             trial = study.best_trial
-
-            print("Value: {}".format(trial.value))
-
-            print("Params: ")
-            for key, value in trial.params.items():
-                print("    {}: {}".format(key, value))
 
             model_params = {**static_params, **trial.params}
 

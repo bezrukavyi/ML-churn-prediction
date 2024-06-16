@@ -13,7 +13,6 @@ import sklearn.metrics
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 from imblearn.over_sampling import SMOTE
-from collections import Counter
 
 
 hostname = "127.0.0.1"
@@ -29,7 +28,6 @@ class LightGbmV2:
         pass
 
     def train(self, *, data, version=1.0):
-        smote = SMOTE(sampling_strategy="minority", random_state=42)
         train_data, test_data = data
 
         train_x = train_data.drop("target", axis=1)
@@ -41,19 +39,11 @@ class LightGbmV2:
         smote = SMOTE(sampling_strategy="minority", random_state=42)
         resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
 
-        counter = Counter(resampled_y)
-        neg = counter[0]
-        pos = counter[1]
-        scale_pos_weight = neg / pos
-
-        print(scale_pos_weight)
-
         static_params = {
             "objective": "binary",
             "metric": "auc",
             "verbosity": -1,
             "boosting_type": "gbdt",
-            "scale_pos_weight": scale_pos_weight,
         }
 
         def objective(trial):
@@ -101,16 +91,7 @@ class LightGbmV2:
             study.optimize(objective, n_trials=20)
 
         finally:
-            print("Number of finished trials: {}".format(len(study.trials)))
-
-            print("Best trial:")
             trial = study.best_trial
-
-            print("Value: {}".format(trial.value))
-
-            print("Params: ")
-            for key, value in trial.params.items():
-                print("    {}: {}".format(key, value))
 
             model_params = {**static_params, **trial.params}
 
@@ -124,7 +105,7 @@ class LightGbmV2:
             train_y = train_data.target
 
             print("Fitting model...")
-            model.fit(train_x, train_y)
+            model.fit(resampled_x, resampled_y)
 
             print("Saving model...")
             save_model(model, study_name, list(train_x.columns))
