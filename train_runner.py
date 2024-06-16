@@ -4,4 +4,4 @@ from studies.xgboost_v1 import XgboostV1
 
 # process_data()
 
-XgboostV1().train(data=load_processed_data(), version="v1")
+XgboostV1().train(data=load_processed_data(), version="v3")

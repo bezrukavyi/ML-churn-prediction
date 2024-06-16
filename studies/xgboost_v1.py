@@ -49,6 +49,7 @@ class XgboostV1:
             dvalid = xgb.DMatrix(valid_x, label=valid_y)
 
             param = {
+                **static_params,
                 "verbosity": 0,
                 "objective": "binary:logistic",
                 "tree_method": "exact",
@@ -72,12 +73,13 @@ class XgboostV1:
                 param["rate_drop"] = trial.suggest_float("rate_drop", 1e-8, 1.0, log=True)
                 param["skip_drop"] = trial.suggest_float("skip_drop", 1e-8, 1.0, log=True)
 
-            bst = xgb.train(param, dtrain)
+            model = xgb.XGBClassifier(**param)
+            model.fit(train_x, train_y)
 
-            preds = bst.predict(dvalid)
-            pred_labels = np.rint(preds)
-            f1_score = sklearn.metrics.f1_score(valid_y, pred_labels)
-            return f1_score
+            pred_proba = model.predict_proba(valid_x)[:, 1]
+            auc = sklearn.metrics.roc_auc_score(valid_y, pred_proba)
+
+            return auc
 
         try:
             study_name = f"XgboostV1_{version}"
