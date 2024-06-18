@@ -3,6 +3,7 @@ from steps.set_missings import set_missings
 from utils.helpers import reduce_mem_usage
 from steps.load_data import load_train_data, load_test_data
 from steps.feature_selection import feature_selection
+from steps.drop_high_correlation import drop_high_correlation
 from utils.pipeline import Pipeline, PipelineStep
 import sklearn
 
@@ -12,22 +13,30 @@ load_test_data_step = PipelineStep("load_test_data", load_test_data)
 set_missings_step = PipelineStep("set_missings", set_missings)
 reduce_mem_usage_step = PipelineStep("reduce_mem_usage", reduce_mem_usage)
 feature_selection_step = PipelineStep("feature_selection", feature_selection)
+drop_high_correlation_step = PipelineStep("drop_high_correlation", drop_high_correlation)
 
 
-# Main Transform Pipeline
-transform_pipeline = Pipeline(
-    "TRANSFORM",
+transform_train_pipeline = Pipeline(
+    "TRANSFORM_TRAIN",
     [
         set_missings_step,
         reduce_mem_usage_step,
-        feature_selection_step,
+        drop_high_correlation_step,
+    ],
+)
+
+transform_test_pipeline = Pipeline(
+    "TRANSFORM_TEST",
+    [
+        set_missings_step,
+        reduce_mem_usage_step,
     ],
 )
 
 
 def process_train_data():
     print("Processing train data...")
-    transformed_train_data = transform_pipeline.run(load_train_data(None))
+    transformed_train_data = transform_train_pipeline.run(load_train_data(None))
 
     print("Shape:", transformed_train_data.shape)
     print("Columns:", transformed_train_data.columns)
@@ -37,7 +46,7 @@ def process_train_data():
 
 def process_test_data():
     print("Processing test data...")
-    transformed_test_data = transform_pipeline.run(load_test_data(None))
+    transformed_test_data = transform_test_pipeline.run(load_test_data(None))
 
     print("Shape:", transformed_test_data.shape)
     print("Columns:", transformed_test_data.columns)
@@ -54,10 +63,10 @@ def save_pickle_data(name, data):
 
 def load_split_processed_data():
     with open("cache/transformed_train_data.pkl", "rb") as f:
-        train_data = pickle.load(f)
+        train_data = convert_to_int(pickle.load(f))
 
     with open("cache/transformed_test_data.pkl", "rb") as f:
-        test_data = pickle.load(f)
+        test_data = convert_to_int(pickle.load(f))
 
     return (train_data, test_data)
 
@@ -66,7 +75,12 @@ def load_processed_data():
     with open("cache/processed_data.pkl", "rb") as f:
         data = pickle.load(f)
 
-    return data
+    train_data, test_data = data
+
+    train_data = convert_to_int(train_data)
+    test_data = convert_to_int(test_data)
+
+    return (train_data, test_data)
 
 
 def process_data():
@@ -92,3 +106,10 @@ def process_data():
     save_pickle_data("cache/processed_data.pkl", (train_data, test_data))
 
     return train_data, test_data
+
+
+def convert_to_int(df):
+    for col in df.columns:
+        if set(df[col].unique()) == {0.0, 1.0}:
+            df[col] = df[col].astype(int)
+    return df

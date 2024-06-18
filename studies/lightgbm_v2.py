@@ -32,17 +32,20 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "reduced_after_feature_selection"
+version = "drop_high_correlation"
 
 # process_train_data
 # process_test_data
 
 train_data, test_data = load_split_processed_data()
 
+print("Train data shape:", train_data.shape)
+print("Test data shape:", test_data.shape)
+
 train_x = train_data.drop("target", axis=1)
 train_y = train_data.target
 
-valid_x = test_data.drop("target", axis=1)
+valid_x = test_data.drop("target", axis=1)[train_x.columns]
 valid_y = test_data.target
 
 smote = SMOTE(sampling_strategy="auto", random_state=SEED)
