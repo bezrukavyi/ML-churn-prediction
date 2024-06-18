@@ -22,6 +22,7 @@ from steps.prepare_data import load_split_processed_data, process_train_data, pr
 import sklearn
 import random
 from sklearn.model_selection import train_test_split, KFold
+from collections import Counter
 import warnings
 import pdb
 
@@ -31,7 +32,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "reduced_features_v1"
+version = "reduced_features_v2_tuning_v2"
 
 # process_train_data()
 # process_test_data()
@@ -53,6 +54,8 @@ resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
 dtrain = lgb.Dataset(resampled_x, label=resampled_y)
 dvalid = lgb.Dataset(valid_x, label=valid_y, reference=dtrain)
 
+print("Scale_pos_weight: ", Counter(resampled_y)[0] / Counter(resampled_y)[1])
+
 static_params = {
     "random_state": SEED,
     "seed": SEED,
@@ -67,13 +70,13 @@ static_params = {
 def objective(trial):
     params = {
         **static_params,
-        "lambda_l1": trial.suggest_float("lambda_l1", 1e-8, 10.0, log=True),
-        "lambda_l2": trial.suggest_float("lambda_l2", 1e-8, 10.0, log=True),
+        "lambda_l1": trial.suggest_float("lambda_l1", 0.1, 10.0, log=True),
+        "lambda_l2": trial.suggest_float("lambda_l2", 0.1, 10.0, log=True),
         "learning_rate": trial.suggest_float("learning_rate", 0.001, 0.1, log=True),
-        "num_leaves": trial.suggest_int("num_leaves", 2, 256),
+        "num_leaves": trial.suggest_int("num_leaves", 2, 120),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
-        "max_depth": trial.suggest_int("max_depth", 10, 80),
+        "max_depth": trial.suggest_int("max_depth", 10, 20),
         "min_child_samples": trial.suggest_int("min_child_samples", 20, 100),
         "early_stopping_rounds": trial.suggest_int("early_stopping_rounds", 50, 200),
     }

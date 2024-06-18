@@ -6,6 +6,7 @@ import ipdb
 import sklearn
 
 import lightgbm as lgbm
+import xgboost as xgb
 
 
 def save_model(model=None, name="model", features=[]):
@@ -62,6 +63,23 @@ def predict_booster_model(model, dataframe):
     y_true = dataframe.target
 
     y_pred_proba = model.predict(X, num_iteration=model.best_iteration)
+    threshold = 0.5
+    y_pred = (y_pred_proba >= threshold).astype(int)
+
+    Metrics().call(y_true, y_pred, y_pred_proba)
+
+    return y_pred
+
+
+def predict_xgbm(model_name, dataframe):
+    model, features = load_model(model_name)
+
+    X = dataframe[features]
+    y_true = dataframe.target
+
+    dvalid = xgb.DMatrix(X, label=y_true)
+
+    y_pred_proba = model.predict(dvalid)
     threshold = 0.5
     y_pred = (y_pred_proba >= threshold).astype(int)
 

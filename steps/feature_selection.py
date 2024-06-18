@@ -83,6 +83,11 @@ FEATURES = [
     "voice_mts_out_drest_partmin_mnt1",
     "sms_in_cnt_mea_mnt3",
     "days_of_last_ppm",
+    "imei_mean_long_days_usage",
+    "sms_in_cnt_std_mnt3",
+    "voice_in_tar_dur_min_mnt1",
+    "voice_in_td_cnt_td_mnt3",
+    "voice_out_tar_dur_min_mnt3",
 ]
 
 
