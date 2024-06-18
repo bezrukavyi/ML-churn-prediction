@@ -57,6 +57,19 @@ def predict_booster(model_name, dataframe, scale=False):
     return y_pred, model, features
 
 
+def predict_booster_model(model, dataframe):
+    X = dataframe.drop(columns=["target"])
+    y_true = dataframe.target
+
+    y_pred_proba = model.predict(X, num_iteration=model.best_iteration)
+    threshold = 0.5
+    y_pred = (y_pred_proba >= threshold).astype(int)
+
+    Metrics().call(y_true, y_pred, y_pred_proba)
+
+    return y_pred
+
+
 class Metrics:
     def __init__(self):
         pass

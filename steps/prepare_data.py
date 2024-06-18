@@ -7,7 +7,6 @@ from steps.drop_high_correlation import drop_high_correlation
 from utils.pipeline import Pipeline, PipelineStep
 import sklearn
 
-
 load_train_data_step = PipelineStep("load_train_data", load_train_data)
 load_test_data_step = PipelineStep("load_test_data", load_test_data)
 set_missings_step = PipelineStep("set_missings", set_missings)
@@ -21,7 +20,8 @@ transform_train_pipeline = Pipeline(
     [
         set_missings_step,
         reduce_mem_usage_step,
-        drop_high_correlation_step,
+        # drop_high_correlation_step,
+        feature_selection_step,
     ],
 )
 
@@ -30,6 +30,7 @@ transform_test_pipeline = Pipeline(
     [
         set_missings_step,
         reduce_mem_usage_step,
+        feature_selection_step,
     ],
 )
 

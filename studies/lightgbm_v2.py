@@ -25,17 +25,16 @@ from sklearn.model_selection import train_test_split, KFold
 import warnings
 import pdb
 
-
 warnings.filterwarnings("ignore")
 
 SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "drop_high_correlation"
+version = "reduced_features_v1"
 
-# process_train_data
-# process_test_data
+# process_train_data()
+# process_test_data()
 
 train_data, test_data = load_split_processed_data()
 

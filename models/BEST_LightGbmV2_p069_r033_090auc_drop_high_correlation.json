@@ -1,1 +1,18 @@
-{"random_state": 42, "seed": 42, "objective": "binary", "metric": "auc", "verbosity": -1, "boosting_type": "gbdt", "feature_pre_filter": false, "lambda_l1": 0.05222186194907641, "lambda_l2": 0.0004968956497707999, "learning_rate": 0.09876614458681757, "num_leaves": 177, "feature_fraction": 0.671500638712106, "bagging_fraction": 0.7539408355912318, "max_depth": 52, "min_child_samples": 77, "early_stopping_rounds": 106}
+{
+  "random_state": 42,
+  "seed": 42,
+  "objective": "binary",
+  "metric": "auc",
+  "verbosity": -1,
+  "boosting_type": "gbdt",
+  "feature_pre_filter": false,
+  "lambda_l1": 0.05222186194907641,
+  "lambda_l2": 0.0004968956497707999,
+  "learning_rate": 0.09876614458681757,
+  "num_leaves": 177,
+  "feature_fraction": 0.671500638712106,
+  "bagging_fraction": 0.7539408355912318,
+  "max_depth": 52,
+  "min_child_samples": 77,
+  "early_stopping_rounds": 106
+}
