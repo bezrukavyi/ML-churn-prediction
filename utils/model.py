@@ -3,6 +3,7 @@ import sklearn
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, recall_score
 import ipdb
+import sklearn
 
 import lightgbm as lgbm
 
@@ -23,17 +24,37 @@ def load_model(file_name):
     return model_tpl
 
 
-def predict(model_name, dataframe):
+def predict(model_name, dataframe, scale=False):
     model, features = load_model(model_name)
 
     X = dataframe[features]
     y_true = dataframe.target
+
+    if scale:
+        scaler = sklearn.preprocessing.StandardScaler()
+        X = scaler.fit_transform(X)
+
     y_pred = model.predict(X)
     y_pred_proba = model.predict_proba(X)[:, 1]
 
     Metrics().call(y_true, y_pred, y_pred_proba)
 
     return model.predict(X)
+
+
+def predict_booster(model_name, dataframe, scale=False):
+    model, features = load_model(model_name)
+
+    X = dataframe[features]
+    y_true = dataframe.target
+
+    y_pred_proba = model.predict(X, num_iteration=model.best_iteration)
+    threshold = 0.5
+    y_pred = (y_pred_proba >= threshold).astype(int)
+
+    Metrics().call(y_true, y_pred, y_pred_proba)
+
+    return y_pred, model, features
 
 
 class Metrics:

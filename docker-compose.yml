@@ -1,19 +1,11 @@
-version: '3.3'
-services:
-  db:
-    image: mysql/mysql-server:8.0
-    restart: always
-    environment:
-      MYSQL_DATABASE: 'db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'
-    ports:
-      - '3306:3306'
-    expose:
-      - '3306'
-    volumes:
-      - mydb:/var/lib/mysql
+version: '3'
 
-volumes:
-  mydb:
+services:
+  sqlite3:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/:/root/db/
