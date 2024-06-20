@@ -32,7 +32,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "reduced_features_v1_tuning_v1"
+version = "new_features_v3_tuning_v2"
 
 # process_train_data()
 # process_test_data()

@@ -32,7 +32,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "reduced_features_v2_tuning_v3"
+version = "new_features_v7_tuning_v5"
 
 # process_train_data()
 # process_test_data()
@@ -48,8 +48,10 @@ train_y = train_data.target
 valid_x = test_data.drop("target", axis=1)[train_x.columns]
 valid_y = test_data.target
 
-smote = SMOTE(sampling_strategy="auto", random_state=SEED)
-resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+# smote = SMOTE(sampling_strategy="auto", random_state=SEED)
+# resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+
+resampled_x, resampled_y = train_x, train_y
 
 dtrain = lgb.Dataset(resampled_x, label=resampled_y)
 dvalid = lgb.Dataset(valid_x, label=valid_y, reference=dtrain)
@@ -60,7 +62,7 @@ static_params = {
     "random_state": SEED,
     "seed": SEED,
     "objective": "binary",
-    "metric": "auc",
+    "metric": "binary_logloss",
     "verbosity": -1,
     "boosting_type": "gbdt",
     "feature_pre_filter": False,
@@ -70,18 +72,16 @@ static_params = {
 def objective(trial):
     params = {
         **static_params,
-        "lambda_l1": trial.suggest_float("lambda_l1", 0.1, 10.0, log=True),
-        "lambda_l2": trial.suggest_float("lambda_l2", 5, 10.0, log=True),
+        "lambda_l1": trial.suggest_float("lambda_l1", 2, 10.0, log=True),
+        "lambda_l2": trial.suggest_float("lambda_l2", 4, 10.0, log=True),
         "learning_rate": trial.suggest_float("learning_rate", 0.001, 0.1, log=True),
-        "num_leaves": trial.suggest_int("num_leaves", 100, 256),
-        "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
-        "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
-        "max_depth": trial.suggest_int("max_depth", 20, 80),
-        "min_child_samples": trial.suggest_int("min_child_samples", 20, 100),
+        "num_leaves": trial.suggest_int("num_leaves", 10, 256),
+        "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
+        "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
+        "max_depth": trial.suggest_int("max_depth", 5, 15),  # MAXIMUM 15, now the best was 10
+        # "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
         "early_stopping_rounds": trial.suggest_int("early_stopping_rounds", 50, 200),
     }
-
-    pruning_callback = optuna.integration.LightGBMPruningCallback(trial, "auc")
 
     kf = KFold(n_splits=5, shuffle=True, random_state=SEED)
     f1_scores = []
@@ -101,7 +101,6 @@ def objective(trial):
             params,
             kfold_dtrain,
             valid_sets=[kfold_dvalid],
-            callbacks=[pruning_callback],
         )
 
         y_pred_proba = model.predict(X_val, num_iteration=model.best_iteration)
@@ -118,7 +117,6 @@ def objective(trial):
         params,
         dtrain,
         valid_sets=[dvalid],
-        callbacks=[pruning_callback],
     )
 
     y_pred_proba = validation_gbm.predict(valid_x, num_iteration=validation_gbm.best_iteration)

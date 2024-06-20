@@ -1,11 +1,19 @@
 import pickle
+import sklearn
+from utils.pipeline import Pipeline, PipelineStep
+
 from steps.set_missings import set_missings
 from utils.helpers import reduce_mem_usage
 from steps.load_data import load_train_data, load_test_data
 from steps.feature_selection import feature_selection
 from steps.drop_high_correlation import drop_high_correlation
-from utils.pipeline import Pipeline, PipelineStep
-import sklearn
+
+from steps.new_features import (
+    merge_train_dpi_features,
+    merge_test_dpi_features,
+    merge_train_bnum_features,
+    merge_test_bnum_features,
+)
 
 load_train_data_step = PipelineStep("load_train_data", load_train_data)
 load_test_data_step = PipelineStep("load_test_data", load_test_data)
@@ -14,6 +22,10 @@ reduce_mem_usage_step = PipelineStep("reduce_mem_usage", reduce_mem_usage)
 feature_selection_step = PipelineStep("feature_selection", feature_selection)
 drop_high_correlation_step = PipelineStep("drop_high_correlation", drop_high_correlation)
 
+merge_train_dpi_features_step = PipelineStep("merge_train_dpi_features", merge_train_dpi_features)
+merge_train_bnum_features_step = PipelineStep("merge_train_bnum_features", merge_train_bnum_features)
+merge_test_dpi_features_step = PipelineStep("merge_test_dpi_features", merge_test_dpi_features)
+merge_test_bnum_features_step = PipelineStep("merge_test_bnum_features", merge_test_bnum_features)
 
 transform_train_pipeline = Pipeline(
     "TRANSFORM_TRAIN",
@@ -22,6 +34,8 @@ transform_train_pipeline = Pipeline(
         reduce_mem_usage_step,
         # drop_high_correlation_step,
         feature_selection_step,
+        merge_train_dpi_features_step,
+        merge_train_bnum_features_step,
     ],
 )
 
@@ -31,6 +45,8 @@ transform_test_pipeline = Pipeline(
         set_missings_step,
         reduce_mem_usage_step,
         feature_selection_step,
+        merge_test_dpi_features_step,
+        merge_test_bnum_features_step,
     ],
 )
 
@@ -44,6 +60,8 @@ def process_train_data():
 
     save_pickle_data("cache/transformed_train_data.pkl", transformed_train_data)
 
+    print('Model saved')
+
 
 def process_test_data():
     print("Processing test data...")
@@ -53,6 +71,8 @@ def process_test_data():
     print("Columns:", transformed_test_data.columns)
 
     save_pickle_data("cache/transformed_test_data.pkl", transformed_test_data)
+
+    print('Model saved')
 
 
 def save_pickle_data(name, data):
