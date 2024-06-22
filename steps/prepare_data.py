@@ -6,6 +6,7 @@ from steps.set_missings import set_missings
 from utils.helpers import reduce_mem_usage
 from steps.load_data import load_train_data, load_test_data
 from steps.feature_selection import feature_selection
+from steps.feature_selection_new import feature_selection_new
 from steps.drop_high_correlation import drop_high_correlation
 
 from steps.new_features import (
@@ -13,6 +14,10 @@ from steps.new_features import (
     merge_test_dpi_features,
     merge_train_bnum_features,
     merge_test_bnum_features,
+    merge_train_fe_features,
+    merge_test_fe_features,
+    merge_train_fe_total_features,
+    merge_test_fe_total_features,
 )
 
 load_train_data_step = PipelineStep("load_train_data", load_train_data)
@@ -26,6 +31,13 @@ merge_train_dpi_features_step = PipelineStep("merge_train_dpi_features", merge_t
 merge_train_bnum_features_step = PipelineStep("merge_train_bnum_features", merge_train_bnum_features)
 merge_test_dpi_features_step = PipelineStep("merge_test_dpi_features", merge_test_dpi_features)
 merge_test_bnum_features_step = PipelineStep("merge_test_bnum_features", merge_test_bnum_features)
+merge_train_fe_features_step = PipelineStep("merge_train_fe_features", merge_train_fe_features)
+merge_test_fe_features_step = PipelineStep("merge_test_fe_features", merge_test_fe_features)
+merge_train_fe_total_features_step = PipelineStep("merge_train_fe_total_features", merge_train_fe_total_features)
+merge_test_fe_total_features_step = PipelineStep("merge_test_fe_total_features", merge_test_fe_total_features)
+feature_selection_new_step = PipelineStep("feature_selection_new", feature_selection_new)
+
+remove_abon_id_step = PipelineStep("feature_selection_new", lambda df: df.drop("abon_id", axis=1))
 
 transform_train_pipeline = Pipeline(
     "TRANSFORM_TRAIN",
@@ -37,6 +49,10 @@ transform_train_pipeline = Pipeline(
         merge_train_dpi_features_step,
         merge_train_bnum_features_step,
         drop_high_correlation_step,
+        merge_train_fe_features_step,
+        drop_high_correlation_step,
+        remove_abon_id_step,
+        # merge_train_fe_total_features_step,
     ],
 )
 
@@ -48,6 +64,8 @@ transform_test_pipeline = Pipeline(
         feature_selection_step,
         merge_test_dpi_features_step,
         merge_test_bnum_features_step,
+        merge_test_fe_features_step,
+        # merge_test_fe_total_features_step,
     ],
 )
 
@@ -61,7 +79,7 @@ def process_train_data():
 
     save_pickle_data("cache/transformed_train_data.pkl", transformed_train_data)
 
-    print("Model saved")
+    print("Data saved")
 
 
 def process_test_data():
@@ -73,7 +91,7 @@ def process_test_data():
 
     save_pickle_data("cache/transformed_test_data.pkl", transformed_test_data)
 
-    print("Model saved")
+    print("Data saved")
 
 
 def save_pickle_data(name, data):
