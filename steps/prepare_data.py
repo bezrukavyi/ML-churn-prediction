@@ -36,6 +36,7 @@ transform_train_pipeline = Pipeline(
         feature_selection_step,
         merge_train_dpi_features_step,
         merge_train_bnum_features_step,
+        drop_high_correlation_step,
     ],
 )
 
@@ -60,7 +61,7 @@ def process_train_data():
 
     save_pickle_data("cache/transformed_train_data.pkl", transformed_train_data)
 
-    print('Model saved')
+    print("Model saved")
 
 
 def process_test_data():
@@ -72,7 +73,7 @@ def process_test_data():
 
     save_pickle_data("cache/transformed_test_data.pkl", transformed_test_data)
 
-    print('Model saved')
+    print("Model saved")
 
 
 def save_pickle_data(name, data):
