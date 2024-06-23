@@ -51,9 +51,9 @@ transform_train_pipeline = Pipeline(
         # drop_high_correlation_step,
         merge_train_fe_features_step,
         # drop_high_correlation_step,
-        remove_abon_id_step,
         feature_selection_new_step,
-        # merge_train_fe_total_features_step,
+        merge_train_fe_total_features_step,
+        remove_abon_id_step,
     ],
 )
 
@@ -66,7 +66,7 @@ transform_test_pipeline = Pipeline(
         merge_test_dpi_features_step,
         merge_test_bnum_features_step,
         merge_test_fe_features_step,
-        # merge_test_fe_total_features_step,
+        merge_test_fe_total_features_step,
     ],
 )
 

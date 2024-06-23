@@ -1,0 +1,17 @@
+{
+  "random_state": 42,
+  "seed": 42,
+  "objective": "binary",
+  "metric": "binary_logloss",
+  "verbosity": -1,
+  "boosting_type": "gbdt",
+  "feature_pre_filter": false,
+  "lambda_l1": 2.740292203572801,
+  "lambda_l2": 9.502614592851208,
+  "learning_rate": 0.07586188568634152,
+  "num_leaves": 93,
+  "feature_fraction": 0.34049127666480095,
+  "bagging_fraction": 0.8460348477289328,
+  "max_depth": 10,
+  "early_stopping_rounds": 88
+}

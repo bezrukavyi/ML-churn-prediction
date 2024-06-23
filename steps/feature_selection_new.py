@@ -85,4 +85,4 @@ FEATURES = [
 
 
 def feature_selection_new(dataframe):
-    return dataframe[FEATURES + ["target"]]
+    return dataframe[FEATURES + ["target", "abon_id"]]
