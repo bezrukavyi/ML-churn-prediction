@@ -18,6 +18,8 @@ from steps.new_features import (
     merge_test_fe_features,
     merge_train_fe_total_features,
     merge_test_fe_total_features,
+    merge_train_fe_slope_features,
+    merge_test_fe_slope_features,
 )
 
 load_train_data_step = PipelineStep("load_train_data", load_train_data)
@@ -36,6 +38,8 @@ merge_test_fe_features_step = PipelineStep("merge_test_fe_features", merge_test_
 merge_train_fe_total_features_step = PipelineStep("merge_train_fe_total_features", merge_train_fe_total_features)
 merge_test_fe_total_features_step = PipelineStep("merge_test_fe_total_features", merge_test_fe_total_features)
 feature_selection_new_step = PipelineStep("feature_selection_new", feature_selection_new)
+merge_train_fe_slope_features_step = PipelineStep("merge_train_fe_slope_features", merge_train_fe_slope_features)
+merge_test_fe_slope_features_step = PipelineStep("merge_test_fe_slope_features", merge_test_fe_slope_features)
 
 remove_abon_id_step = PipelineStep("feature_selection_new", lambda df: df.drop("abon_id", axis=1))
 
@@ -53,7 +57,9 @@ transform_train_pipeline = Pipeline(
         # drop_high_correlation_step,
         merge_train_fe_total_features_step,
         feature_selection_new_step,
+        merge_train_fe_slope_features_step,
         remove_abon_id_step,
+        drop_high_correlation_step,
     ],
 )
 
@@ -67,6 +73,7 @@ transform_test_pipeline = Pipeline(
         merge_test_bnum_features_step,
         merge_test_fe_features_step,
         merge_test_fe_total_features_step,
+        merge_test_fe_slope_features_step,
     ],
 )
 

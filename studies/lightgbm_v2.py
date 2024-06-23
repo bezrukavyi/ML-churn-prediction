@@ -32,7 +32,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "new_total_features_fe_v1_tuning_v1"
+version = "new_slopes_features_v1_tuning_v1"
 
 # process_train_data()
 # process_test_data()
@@ -75,10 +75,10 @@ def objective(trial):
         "lambda_l1": trial.suggest_float("lambda_l1", 2, 10.0, log=True),
         "lambda_l2": trial.suggest_float("lambda_l2", 4, 10.0, log=True),
         "learning_rate": trial.suggest_float("learning_rate", 0.001, 0.1, log=True),
-        "num_leaves": trial.suggest_int("num_leaves", 10, 256),
+        "num_leaves": trial.suggest_int("num_leaves", 100, 356),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
-        "max_depth": trial.suggest_int("max_depth", 5, 15),  # MAXIMUM 15, now the best was 10
+        "max_depth": trial.suggest_int("max_depth", 10, 20),  # MAXIMUM 15, now the best was 10
         # "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
         "early_stopping_rounds": trial.suggest_int("early_stopping_rounds", 50, 200),
     }

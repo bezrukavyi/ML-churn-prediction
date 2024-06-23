@@ -43,6 +43,7 @@ def merge_test_fe_features(dataframe):
 
     return dataframe.merge(bnum_df, on="abon_id", how="left").fillna(0)
 
+
 def merge_train_fe_total_features(dataframe):
     with open("cache/project_step_5_total_sum_train.pkl", "rb") as f:
         bnum_df = pickle.load(f)
@@ -52,6 +53,20 @@ def merge_train_fe_total_features(dataframe):
 
 def merge_test_fe_total_features(dataframe):
     with open("cache/project_step_5_total_sum_test.pkl", "rb") as f:
+        bnum_df = pickle.load(f)
+
+    return dataframe.merge(bnum_df, on="abon_id", how="left").fillna(0)
+
+
+def merge_train_fe_slope_features(dataframe):
+    with open("cache/project_step_5_total_slopes_train.pkl", "rb") as f:
+        bnum_df = pickle.load(f)
+
+    return dataframe.merge(bnum_df, on="abon_id", how="left").fillna(0)
+
+
+def merge_test_fe_slope_features(dataframe):
+    with open("cache/project_step_5_total_slopes_test.pkl", "rb") as f:
         bnum_df = pickle.load(f)
 
     return dataframe.merge(bnum_df, on="abon_id", how="left").fillna(0)

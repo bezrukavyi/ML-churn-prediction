@@ -8,15 +8,6 @@ import scipy
 
 def calculate_slopes(dataframe):
     dataframe = dataframe.copy()
-
-    slope_columns = [
-        "all_cnt_mea",
-        "content_cnt_mea",
-        "num_act_days_mea",
-        "non_accum_internet_vol_mea",
-        "conn_in_uniq_cnt_mea",
-    ]
-
     print("Slope_columns: ", slope_columns)
 
     for column in slope_columns:
