@@ -25,15 +25,27 @@ def load_model(file_name):
     return model_tpl
 
 
-def predict(model_name, dataframe, scale=False):
+def save_final_model(model=None, name="model", features=[]):
+    if model:
+        with open(f"final_models/{name}.pickle", "wb") as file:
+            pickle.dump((model, features), file)
+            print("Save", name)
+
+    return name
+
+
+def load_final_model(file_name):
+    with open(f"final_models/{file_name}", "rb") as file:
+        model_tpl = pickle.load(file)
+
+    return model_tpl
+
+
+def predict(model_name, dataframe):
     model, features = load_model(model_name)
 
     X = dataframe[features]
     y_true = dataframe.target
-
-    if scale:
-        scaler = sklearn.preprocessing.StandardScaler()
-        X = scaler.fit_transform(X)
 
     y_pred = model.predict(X)
     y_pred_proba = model.predict_proba(X)[:, 1]
@@ -86,6 +98,22 @@ def predict_xgbm(model_name, dataframe):
     Metrics().call(y_true, y_pred, y_pred_proba)
 
     return y_pred
+
+
+def lgb_booster_to_model(model_name, X, y):
+    booster, features = load_model(f"{model_name}.pickle")
+
+    model_params = booster.params
+
+    model_params.pop("num_iterations")
+    model_params.pop("early_stopping_round")
+
+    model_cls = lgbm.LGBMClassifier(**model_params)
+
+    model_cls = model_cls.fit(X[features], y, init_model=booster)
+
+    save_final_model(model_cls, model_name, features)
+    return load_final_model(f"{model_name}.pickle")
 
 
 class Metrics:
