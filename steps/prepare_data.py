@@ -46,16 +46,17 @@ transform_train_pipeline = Pipeline(
     [
         set_missings_step,
         reduce_mem_usage_step,
-        drop_high_correlation_step,
+        # drop_high_correlation_step,
         merge_train_dpi_features_step,
-        drop_high_correlation_step,
+        # drop_high_correlation_step,
         merge_train_fe_features_step,
-        drop_high_correlation_step,
+        # drop_high_correlation_step,
         merge_train_fe_total_features_step,
-        drop_high_correlation_step,
+        # drop_high_correlation_step,
         merge_train_bnum_features_step,
-        drop_high_correlation_step,
+        # drop_high_correlation_step,
         remove_abon_id_step,
+        feature_selection_step,
     ],
 )
 
