@@ -11,7 +11,6 @@ from sklearn import preprocessing
 from sklearn.metrics import accuracy_score, precision_score
 from sklearn.metrics import confusion_matrix
 from utils.model import save_model
-import xgboost as xgb
 import numpy as np
 import sklearn.datasets
 import sklearn.metrics
@@ -25,6 +24,8 @@ from sklearn.model_selection import train_test_split, KFold
 from collections import Counter
 import warnings
 import pdb
+from imblearn.under_sampling import RandomUnderSampler
+import xgboost as xgb
 
 warnings.filterwarnings("ignore")
 
@@ -32,7 +33,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "new_features_v3_tuning_v2"
+version = "all_features_v1_with_tuning_v1"
 
 # process_train_data()
 # process_test_data()
@@ -48,30 +49,46 @@ train_y = train_data.target
 valid_x = test_data.drop("target", axis=1)[train_x.columns]
 valid_y = test_data.target
 
-smote = SMOTE(sampling_strategy="auto", random_state=SEED)
+not_churn_data_count = train_data[train_data.target == 0].shape[0]
+not_churn_count_strategy = int(not_churn_data_count * 0.75)
+churn_count_strategy = int(not_churn_data_count * 0.75)
+
+# Undersampling -> Oversampling
+rus = RandomUnderSampler(random_state=SEED, sampling_strategy={0: not_churn_count_strategy})
+train_x, train_y = rus.fit_resample(train_x, train_y)
+
+smote = SMOTE(random_state=SEED, sampling_strategy={0: not_churn_count_strategy, 1: churn_count_strategy})
 resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+
+# resampled_x, resampled_y = train_x, train_y
 
 dtrain = xgb.DMatrix(resampled_x, label=resampled_y)
 dvalid = xgb.DMatrix(valid_x, label=valid_y)
 
-print("Scale_pos_weight: ", Counter(resampled_y)[0] / Counter(resampled_y)[1])
+print("CHURN: ", Counter(resampled_y)[1])
+print("NOT CHURN: ", Counter(resampled_y)[0])
 
-static_params = {"random_state": SEED, "n_jobs": 4}
+static_params = {
+    "random_state": SEED,
+    "n_jobs": 4,
+    "verbosity": 0,
+    "objective": "binary:logistic",
+    "tree_method": "gpu_hist",
+    "booster": "gbtree",
+    "eval_metric": "auc",
+    "predictor": "gpu_predictor",
+}
 
 
 def objective(trial):
     params = {
         **static_params,
-        "verbosity": 0,
-        "objective": "binary:logistic",
-        "tree_method": "exact",
-        "booster": "gbtree",
         "lambda": trial.suggest_float("lambda", 1e-8, 1.0, log=True),
         "alpha": trial.suggest_float("alpha", 1e-8, 1.0, log=True),
         "subsample": trial.suggest_float("subsample", 0.2, 1.0),
         "colsample_bytree": trial.suggest_float("colsample_bytree", 0.2, 1.0),
-        "max_depth": trial.suggest_int("max_depth", 5, 20, step=1),
-        "min_child_weight": trial.suggest_int("min_child_weight", 2, 10),
+        "max_depth": trial.suggest_int("max_depth", 15, 60),
+        "min_child_weight": trial.suggest_int("min_child_weight", 5, 20),
         "eta": trial.suggest_float("eta", 1e-8, 1.0, log=True),
         "gamma": trial.suggest_float("gamma", 1e-8, 1.0, log=True),
         "grow_policy": trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"]),
@@ -81,32 +98,32 @@ def objective(trial):
     f1_scores = []
     auc_scores = []
 
-    for train_index, val_index in kf.split(resampled_x):
-        X_train = resampled_x.iloc[train_index]
-        y_train = resampled_y.iloc[train_index]
+    # for train_index, val_index in kf.split(resampled_x):
+    #     X_train = resampled_x.iloc[train_index]
+    #     y_train = resampled_y.iloc[train_index]
 
-        X_val = resampled_x.iloc[val_index]
-        y_val = resampled_y.iloc[val_index]
+    #     X_val = resampled_x.iloc[val_index]
+    #     y_val = resampled_y.iloc[val_index]
 
-        kfold_dtrain = xgb.DMatrix(X_train, label=y_train)
-        kfold_dvalid = xgb.DMatrix(X_val, label=y_val)
+    #     kfold_dtrain = xgb.DMatrix(X_train, label=y_train)
+    #     kfold_dvalid = xgb.DMatrix(X_val, label=y_val)
 
-        model = xgb.train(
-            params,
-            kfold_dtrain,
-            evals=[(kfold_dvalid, "validation")],
-        )
+    #     model = xgb.train(
+    #         params,
+    #         kfold_dtrain,
+    #         evals=[(kfold_dvalid, "validation")],
+    #     )
 
-        y_pred_proba = model.predict(kfold_dvalid)
+    #     y_pred_proba = model.predict(kfold_dvalid)
 
-        threshold = 0.5
-        y_pred = (y_pred_proba >= threshold).astype(int)
+    #     threshold = 0.5
+    #     y_pred = (y_pred_proba >= threshold).astype(int)
 
-        f1_score = sklearn.metrics.f1_score(y_val, y_pred)
-        auc_score = sklearn.metrics.roc_auc_score(y_val, y_pred_proba)
+    #     f1_score = sklearn.metrics.f1_score(y_val, y_pred)
+    #     auc_score = sklearn.metrics.roc_auc_score(y_val, y_pred_proba)
 
-        f1_scores.append(f1_score)
-        auc_scores.append(auc_score)
+    #     f1_scores.append(f1_score)
+    #     auc_scores.append(auc_score)
 
     validation_gbm = xgb.train(
         params,

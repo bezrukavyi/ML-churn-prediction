@@ -35,8 +35,8 @@ random.seed(SEED)
 
 version = "new_feature_selection_v1_with_oversampling_v1"
 
-# process_train_data()
-# process_test_data()
+process_train_data()
+process_test_data()
 
 train_data, test_data = load_split_processed_data()
 
