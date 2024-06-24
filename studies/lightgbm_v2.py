@@ -34,7 +34,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "all_features_v1_with_oversampling_1_priority_v1"
+version = "LightGbmV2_all_features_v1_with_oversampling_1_priority_v5_auc_score"
 
 # process_train_data()
 # process_test_data()
@@ -73,7 +73,7 @@ static_params = {
     "random_state": SEED,
     "seed": SEED,
     "objective": "binary",
-    "metric": "binary_logloss",
+    "metric": "auc",
     "verbosity": -1,
     "boosting_type": "gbdt",
     "feature_pre_filter": False,
@@ -86,10 +86,10 @@ def objective(trial):
         "lambda_l1": trial.suggest_float("lambda_l1", 2, 10.0, log=True),
         "lambda_l2": trial.suggest_float("lambda_l2", 4, 10.0, log=True),
         "learning_rate": trial.suggest_float("learning_rate", 0.001, 0.1, log=True),
-        "num_leaves": trial.suggest_int("num_leaves", 100, 320),
+        "num_leaves": trial.suggest_int("num_leaves", 100, 420),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
-        "max_depth": trial.suggest_int("max_depth", 10, 20),  # MAXIMUM 15, now the best was 10
+        "max_depth": trial.suggest_int("max_depth", 15, 25),  # MAXIMUM 15, now the best was 10
         # "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
         "early_stopping_rounds": trial.suggest_int("early_stopping_rounds", 50, 200),
     }
@@ -97,6 +97,8 @@ def objective(trial):
     # kf = KFold(n_splits=5, shuffle=True, random_state=SEED)
     f1_scores = []
     auc_scores = []
+
+    pruned_callback = optuna.integration.LightGBMPruningCallback(trial, "auc")
 
     # for train_index, val_index in kf.split(resampled_x):
     #     X_train = resampled_x.iloc[train_index]
@@ -128,6 +130,7 @@ def objective(trial):
         params,
         dtrain,
         valid_sets=[dvalid],
+        callbacks=[pruned_callback],
     )
 
     y_pred_proba = validation_gbm.predict(valid_x, num_iteration=validation_gbm.best_iteration)
@@ -140,7 +143,7 @@ def objective(trial):
     f1_scores.append(f1_score)
     auc_scores.append(auc_score)
 
-    return 0.4 * np.mean(auc_scores) + 0.6 * np.mean(f1_scores)
+    return auc_score
 
 
 study_name = f"LightGbmV2_{version}"
@@ -153,7 +156,8 @@ study = optuna.create_study(
 )
 
 try:
-    study.optimize(objective, n_trials=500)
+    # study.optimize(objective, n_trials=500)
+    pass
 
 finally:
     trial = study.best_trial
