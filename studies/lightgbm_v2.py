@@ -34,7 +34,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "LightGbmV2_all_features_v1_with_oversampling_1_priority_v5_auc_score"
+version = "all_features_v1_with_oversampling_1_priority_v1_auc_score"
 
 # process_train_data()
 # process_test_data()
@@ -89,7 +89,7 @@ def objective(trial):
         "num_leaves": trial.suggest_int("num_leaves", 100, 420),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
-        "max_depth": trial.suggest_int("max_depth", 15, 25),  # MAXIMUM 15, now the best was 10
+        "max_depth": trial.suggest_int("max_depth", 10, 20),  # MAXIMUM 15, now the best was 10
         # "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
         "early_stopping_rounds": trial.suggest_int("early_stopping_rounds", 50, 200),
     }
@@ -156,8 +156,7 @@ study = optuna.create_study(
 )
 
 try:
-    # study.optimize(objective, n_trials=500)
-    pass
+    study.optimize(objective, n_trials=5000)
 
 finally:
     trial = study.best_trial
