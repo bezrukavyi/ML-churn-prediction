@@ -25,6 +25,8 @@ from sklearn.model_selection import train_test_split, KFold
 from collections import Counter
 import warnings
 import pdb
+from imblearn.under_sampling import RandomUnderSampler
+
 
 warnings.filterwarnings("ignore")
 
@@ -32,7 +34,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "new_slopes_features_v1_tuning_v1"
+version = "all_features_v1_with_oversampling_1_priority_v1"
 
 # process_train_data()
 # process_test_data()
@@ -48,15 +50,24 @@ train_y = train_data.target
 valid_x = test_data.drop("target", axis=1)[train_x.columns]
 valid_y = test_data.target
 
-# smote = SMOTE(sampling_strategy="auto", random_state=SEED)
-# resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+not_churn_data_count = train_data[train_data.target == 0].shape[0]
 
-resampled_x, resampled_y = train_x, train_y
+not_churn_count_strategy = int(not_churn_data_count * 0.6)
+churn_count_strategy = int(not_churn_data_count * 0.7)
+
+rus = RandomUnderSampler(random_state=SEED, sampling_strategy={0: not_churn_count_strategy})
+train_x, train_y = rus.fit_resample(train_x, train_y)
+
+smote = SMOTE(random_state=SEED, sampling_strategy={0: not_churn_count_strategy, 1: churn_count_strategy})
+resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+
+# resampled_x, resampled_y = train_x, train_y
 
 dtrain = lgb.Dataset(resampled_x, label=resampled_y)
 dvalid = lgb.Dataset(valid_x, label=valid_y, reference=dtrain)
 
-print("Scale_pos_weight: ", Counter(resampled_y)[0] / Counter(resampled_y)[1])
+print("CHURN: ", Counter(resampled_y)[1])
+print("NOT CHURN: ", Counter(resampled_y)[0])
 
 static_params = {
     "random_state": SEED,
@@ -75,7 +86,7 @@ def objective(trial):
         "lambda_l1": trial.suggest_float("lambda_l1", 2, 10.0, log=True),
         "lambda_l2": trial.suggest_float("lambda_l2", 4, 10.0, log=True),
         "learning_rate": trial.suggest_float("learning_rate", 0.001, 0.1, log=True),
-        "num_leaves": trial.suggest_int("num_leaves", 100, 356),
+        "num_leaves": trial.suggest_int("num_leaves", 100, 320),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
         "max_depth": trial.suggest_int("max_depth", 10, 20),  # MAXIMUM 15, now the best was 10
@@ -83,35 +94,35 @@ def objective(trial):
         "early_stopping_rounds": trial.suggest_int("early_stopping_rounds", 50, 200),
     }
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=SEED)
+    # kf = KFold(n_splits=5, shuffle=True, random_state=SEED)
     f1_scores = []
     auc_scores = []
 
-    for train_index, val_index in kf.split(resampled_x):
-        X_train = resampled_x.iloc[train_index]
-        y_train = resampled_y.iloc[train_index]
+    # for train_index, val_index in kf.split(resampled_x):
+    #     X_train = resampled_x.iloc[train_index]
+    #     y_train = resampled_y.iloc[train_index]
 
-        X_val = resampled_x.iloc[val_index]
-        y_val = resampled_y.iloc[val_index]
+    #     X_val = resampled_x.iloc[val_index]
+    #     y_val = resampled_y.iloc[val_index]
 
-        kfold_dtrain = lgb.Dataset(X_train, label=y_train)
-        kfold_dvalid = lgb.Dataset(X_val, label=y_val, reference=kfold_dtrain)
+    #     kfold_dtrain = lgb.Dataset(X_train, label=y_train)
+    #     kfold_dvalid = lgb.Dataset(X_val, label=y_val, reference=kfold_dtrain)
 
-        model = lgb.train(
-            params,
-            kfold_dtrain,
-            valid_sets=[kfold_dvalid],
-        )
+    #     model = lgb.train(
+    #         params,
+    #         kfold_dtrain,
+    #         valid_sets=[kfold_dvalid],
+    #     )
 
-        y_pred_proba = model.predict(X_val, num_iteration=model.best_iteration)
-        threshold = 0.5
-        y_pred = (y_pred_proba >= threshold).astype(int)
+    #     y_pred_proba = model.predict(X_val, num_iteration=model.best_iteration)
+    #     threshold = 0.5
+    #     y_pred = (y_pred_proba >= threshold).astype(int)
 
-        f1_score = sklearn.metrics.f1_score(y_val, y_pred)
-        auc_score = sklearn.metrics.roc_auc_score(y_val, y_pred_proba)
+    #     f1_score = sklearn.metrics.f1_score(y_val, y_pred)
+    #     auc_score = sklearn.metrics.roc_auc_score(y_val, y_pred_proba)
 
-        f1_scores.append(f1_score)
-        auc_scores.append(auc_score)
+    #     f1_scores.append(f1_score)
+    #     auc_scores.append(auc_score)
 
     validation_gbm = lgb.train(
         params,
