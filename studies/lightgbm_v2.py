@@ -131,6 +131,8 @@ def objective(trial):
     #     f1_scores.append(f1_score)
     #     auc_scores.append(auc_score)
 
+    # стратифікація по таргету, щоб розподіл зберігся
+    # побудувати графік дерев в lgb (в залежності від даних). Графік
     validation_gbm = lgb.train(
         params,
         dtrain,
@@ -148,7 +150,7 @@ def objective(trial):
     f1_scores.append(f1_score)
     auc_scores.append(auc_score)
 
-    return auc_score
+    return 0.6 * np.mean(auc_scores) + 0.4 * np.mean(f1_scores)
 
 
 study_name = f"LightGbmV2_{version}"
