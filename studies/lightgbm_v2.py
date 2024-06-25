@@ -39,29 +39,34 @@ version = "all_features_v1_with_oversampling_1_priority_v1_auc_score"
 # process_train_data()
 # process_test_data()
 
+
+def oversampling(train_data, test_data):
+    train_x = train_data.drop(columns="target")
+    train_y = train_data.target
+
+    valid_x = test_data.drop("target", axis=1)[train_x.columns]
+    valid_y = test_data.target
+
+    not_churn_data_count = train_data[train_data.target == 0].shape[0]
+
+    not_churn_count_strategy = int(not_churn_data_count * 0.6)
+    churn_count_strategy = int(not_churn_data_count * 0.7)
+
+    rus = RandomUnderSampler(random_state=SEED, sampling_strategy={0: not_churn_count_strategy})
+    train_x, train_y = rus.fit_resample(train_x, train_y)
+
+    smote = SMOTE(random_state=SEED, sampling_strategy={0: not_churn_count_strategy, 1: churn_count_strategy})
+    resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
+
+    return resampled_x, resampled_y, valid_x, valid_y
+
+
 train_data, test_data = load_split_processed_data()
 
 print("Train data shape:", train_data.shape)
 print("Test data shape:", test_data.shape)
 
-train_x = train_data.drop("target", axis=1)
-train_y = train_data.target
-
-valid_x = test_data.drop("target", axis=1)[train_x.columns]
-valid_y = test_data.target
-
-not_churn_data_count = train_data[train_data.target == 0].shape[0]
-
-not_churn_count_strategy = int(not_churn_data_count * 0.6)
-churn_count_strategy = int(not_churn_data_count * 0.7)
-
-rus = RandomUnderSampler(random_state=SEED, sampling_strategy={0: not_churn_count_strategy})
-train_x, train_y = rus.fit_resample(train_x, train_y)
-
-smote = SMOTE(random_state=SEED, sampling_strategy={0: not_churn_count_strategy, 1: churn_count_strategy})
-resampled_x, resampled_y = smote.fit_resample(train_x, train_y)
-
-# resampled_x, resampled_y = train_x, train_y
+resampled_x, resampled_y, valid_x, valid_y = oversampling(train_data, test_data)
 
 dtrain = lgb.Dataset(resampled_x, label=resampled_y)
 dvalid = lgb.Dataset(valid_x, label=valid_y, reference=dtrain)

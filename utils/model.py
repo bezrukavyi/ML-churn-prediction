@@ -132,6 +132,8 @@ class Metrics:
         print("Classification Report:")
         print(class_report)
 
+        return auc, class_report
+
         # confusion matrix
         # conf_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred)
         # print("Confusion Matrix:")
