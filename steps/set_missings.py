@@ -19,10 +19,6 @@ def set_missings(dataframe):
 
     dataframe = dataframe.drop(columns=UNSUPPORTED_COLUMNS)
 
-    # Drop frauds
-    dataframe = dataframe[dataframe.MV_FRAUD_BLOCK != 1]
-    dataframe = dataframe.drop(columns=["MV_FRAUD_BLOCK"])
-
     # NEW COLUMN: device_brand
     # MISSING VALUE (MEDIANA): device_price
 
@@ -66,5 +62,13 @@ def set_missings(dataframe):
     dataframe[list(highly_missing_int_columns)] = dataframe[list(highly_missing_int_columns)].fillna(0)
 
     dataframe = dataframe.drop(columns=["device_brand"])
+
+    return dataframe
+
+
+def drop_fraud(dataframe):
+    # Drop frauds
+    dataframe = dataframe[dataframe.MV_FRAUD_BLOCK != 1]
+    dataframe = dataframe.drop(columns=["MV_FRAUD_BLOCK"])
 
     return dataframe

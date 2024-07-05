@@ -21,25 +21,25 @@ from steps.new_features import (
     merge_test_fe_slope_features,
 )
 
-load_train_data_step = PipelineStep("load_train_data", load_train_data)
-load_test_data_step = PipelineStep("load_test_data", load_test_data)
-set_missings_step = PipelineStep("set_missings", set_missings)
-reduce_mem_usage_step = PipelineStep("reduce_mem_usage", reduce_mem_usage)
-feature_selection_step = PipelineStep("feature_selection", feature_selection)
-drop_high_correlation_step = PipelineStep("drop_high_correlation", drop_high_correlation)
+load_train_data_step = PipelineStep(load_train_data)
+load_test_data_step = PipelineStep(load_test_data)
+set_missings_step = PipelineStep(set_missings)
+reduce_mem_usage_step = PipelineStep(reduce_mem_usage)
+feature_selection_step = PipelineStep(feature_selection)
+drop_high_correlation_step = PipelineStep(drop_high_correlation)
 
-merge_train_dpi_features_step = PipelineStep("merge_train_dpi_features", merge_train_dpi_features)
-merge_train_bnum_features_step = PipelineStep("merge_train_bnum_features", merge_train_bnum_features)
-merge_test_dpi_features_step = PipelineStep("merge_test_dpi_features", merge_test_dpi_features)
-merge_test_bnum_features_step = PipelineStep("merge_test_bnum_features", merge_test_bnum_features)
-merge_train_fe_features_step = PipelineStep("merge_train_fe_features", merge_train_fe_features)
-merge_test_fe_features_step = PipelineStep("merge_test_fe_features", merge_test_fe_features)
-merge_train_fe_total_features_step = PipelineStep("merge_train_fe_total_features", merge_train_fe_total_features)
-merge_test_fe_total_features_step = PipelineStep("merge_test_fe_total_features", merge_test_fe_total_features)
-merge_train_fe_slope_features_step = PipelineStep("merge_train_fe_slope_features", merge_train_fe_slope_features)
-merge_test_fe_slope_features_step = PipelineStep("merge_test_fe_slope_features", merge_test_fe_slope_features)
+merge_train_dpi_features_step = PipelineStep(merge_train_dpi_features)
+merge_train_bnum_features_step = PipelineStep(merge_train_bnum_features)
+merge_test_dpi_features_step = PipelineStep(merge_test_dpi_features)
+merge_test_bnum_features_step = PipelineStep(merge_test_bnum_features)
+merge_train_fe_features_step = PipelineStep(merge_train_fe_features)
+merge_test_fe_features_step = PipelineStep(merge_test_fe_features)
+merge_train_fe_total_features_step = PipelineStep(merge_train_fe_total_features)
+merge_test_fe_total_features_step = PipelineStep(merge_test_fe_total_features)
+merge_train_fe_slope_features_step = PipelineStep(merge_train_fe_slope_features)
+merge_test_fe_slope_features_step = PipelineStep(merge_test_fe_slope_features)
 
-remove_abon_id_step = PipelineStep("remove_abon_id_step", lambda df: df.drop("abon_id", axis=1))
+remove_abon_id_step = PipelineStep(lambda df: df.drop("abon_id", axis=1))
 
 transform_train_pipeline = Pipeline(
     "TRANSFORM_TRAIN",

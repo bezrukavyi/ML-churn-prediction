@@ -125,7 +125,7 @@ class Metrics:
 
         # AUC
         auc = sklearn.metrics.roc_auc_score(y_true, y_pred_proba)
-        print(f"AUC: {auc:.2f}")
+        print(f"AUC: {auc:.3f}")
 
         # classification report
         class_report = sklearn.metrics.classification_report(y_true, y_pred)
