@@ -12,10 +12,10 @@ task_total = 0
 def generate_train_dpi_feature(dataframe):
     cache_key = "cache/dpi_features(short)_train_2.pkl"
 
-    dpi_new_df = generate_dpi_features(LoadData().df_train_fe, LoadData().df_train_dpi)
+    # dpi_new_df = generate_dpi_features(LoadData().df_train_fe, LoadData().df_train_dpi)
 
-    with open(cache_key, "wb") as f:
-        pickle.dump(dpi_new_df, f)
+    # with open(cache_key, "wb") as f:
+    #     pickle.dump(dpi_new_df, f)
 
     with open(cache_key, "rb") as f:
         dpi_new_df = pickle.load(f)
@@ -27,10 +27,10 @@ def generate_train_dpi_feature(dataframe):
 def generate_test_dpi_feature(dataframe):
     cache_key = "cache/dpi_features(short)_test_2.pkl"
 
-    dpi_new_df = generate_dpi_features(LoadData().df_test_fe, LoadData().df_test_dpi)
+    # dpi_new_df = generate_dpi_features(LoadData().df_test_fe, LoadData().df_test_dpi)
 
-    with open(cache_key, "wb") as f:
-        pickle.dump(dpi_new_df, f)
+    # with open(cache_key, "wb") as f:
+    #     pickle.dump(dpi_new_df, f)
 
     with open(cache_key, "rb") as f:
         dpi_new_df = pickle.load(f)

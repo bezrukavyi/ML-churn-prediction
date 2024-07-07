@@ -22,7 +22,7 @@ def set_missings(dataframe):
     # NEW COLUMN: device_brand
     # MISSING VALUE (MEDIANA): device_price
 
-    DEVICE_COLUMNS = [
+    DEVICE_BRAND_COLUMNS = [
         "device_brand_samsung",
         "device_brand_nokia",
         "device_brand_lenovo",
@@ -33,8 +33,18 @@ def set_missings(dataframe):
         "device_brand_meizu",
         "device_brand_prestigio",
         "device_brand_sony",
+    ]
+
+    dataframe["device_brand_other"] = 0
+    dataframe["device_brand_other"] = (~dataframe[DEVICE_BRAND_COLUMNS].any(axis=1)).astype(int)
+
+    DEVICE_COLUMNS = [
+        *DEVICE_BRAND_COLUMNS,
         "device_brand_other",
     ]
+
+    dataframe["device_brand_nan"] = 0
+    dataframe["device_brand_nan"] = (~dataframe[DEVICE_COLUMNS].any(axis=1)).astype(int)
 
     dataframe[DEVICE_COLUMNS] = dataframe[DEVICE_COLUMNS].fillna(0)
     dataframe["device_brand"] = dataframe[DEVICE_COLUMNS].idxmax(axis=1)
