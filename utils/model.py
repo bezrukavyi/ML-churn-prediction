@@ -127,6 +127,9 @@ class Metrics:
         auc = sklearn.metrics.roc_auc_score(y_true, y_pred_proba)
         print(f"AUC: {auc:.3f}")
 
+        matthews_corrcoef = sklearn.metrics.matthews_corrcoef(y_true, y_pred)
+        print(f"Matthews Correlation Coefficient: {matthews_corrcoef:.3f}")
+
         # classification report
         class_report = sklearn.metrics.classification_report(y_true, y_pred)
         print("Classification Report:")

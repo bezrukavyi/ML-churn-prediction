@@ -27,7 +27,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "fixing_overfitting_v15"
+version = "fixing_overfitting_v24"
 
 with open("cache/train_data_pipeline.pkl", "rb") as f:
     train_data = pickle.load(f)
@@ -65,6 +65,9 @@ sub_train_data["target"] = sub_train_y
 
 resampled_x, resampled_y = oversampling(sub_train_data, size=0.6)
 
+dtrain = lgb.Dataset(resampled_x, label=resampled_y)
+dvalid = lgb.Dataset(sub_val_x, label=sub_val_y)
+
 static_params = {
     "random_state": SEED,
     "seed": SEED,
@@ -73,7 +76,7 @@ static_params = {
     "verbosity": -1,
     "boosting_type": "gbdt",
     "feature_pre_filter": False,
-    # "early_stopping_rounds": 100,
+    "early_stopping_rounds": 120,
     "n_jobs": -1,
 }
 
@@ -81,12 +84,10 @@ static_params = {
 def objective(trial):
     params = {
         **static_params,
-        "lambda_l1": trial.suggest_int("lambda_l1", 5, 15),
-        "lambda_l2": trial.suggest_int("lambda_l2", 5, 15),
-        "learning_rate": trial.suggest_categorical(
-            "learning_rate", [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
-        ),
-        "num_leaves": trial.suggest_int("num_leaves", 50, 100, step=5),
+        "lambda_l1": trial.suggest_int("lambda_l1", 4, 12),
+        "lambda_l2": trial.suggest_int("lambda_l2", 4, 12),
+        "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.06, log=True),
+        "num_leaves": trial.suggest_int("num_leaves", 40, 75, step=5),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
         "max_depth": trial.suggest_int("max_depth", 9, 15),
@@ -100,45 +101,43 @@ def objective(trial):
     f1_scores = []
     auc_scores = []
 
-    model_cls = lgb.LGBMClassifier(**params)
+    model = lgb.train(
+        params,
+        dtrain,
+        valid_sets=[dvalid],
+    )
 
-    model_cls = model_cls.fit(resampled_x, resampled_y)
+    def evaluate_model(X, y_true, model, threshold=0.5):
+        y_pred_proba = model.predict(X, best_iteration=model.best_iteration)
+        y_pred = (y_pred_proba >= threshold).astype(int)
+        roc_auc = sklearn.metrics.roc_auc_score(y_true, y_pred_proba)
+        f1 = sklearn.metrics.f1_score(y_true, y_pred, pos_label=1)
 
-    threshold = 0.5
+        auc_scores.append(roc_auc)
+        f1_scores.append(f1)
+
+        return roc_auc, f1
 
     train_X = sub_train_x[resampled_x.columns]
     train_y_true = sub_train_y
 
-    train_y_pred_proba = model_cls.booster_.predict(train_X)
-    train_y_pred = (train_y_pred_proba >= threshold).astype(int)
-
-    train_roc_auc_score = sklearn.metrics.roc_auc_score(train_y_true, train_y_pred_proba)
-    train_f1_score = sklearn.metrics.f1_score(train_y_true, train_y_pred, pos_label=1)
-
-    auc_scores.append(train_roc_auc_score)
-    f1_scores.append(train_f1_score)
-
+    train_roc_auc_score, train_f1_score = evaluate_model(train_X, train_y_true, model)
     print("ROC AUC:", train_roc_auc_score, "F1 Score:", train_f1_score)
 
     val_X = sub_val_x[resampled_x.columns]
     val_y_true = sub_val_y
 
-    val_y_pred_proba = model_cls.booster_.predict(sub_val_x)
-    val_y_pred = (val_y_pred_proba >= threshold).astype(int)
-
-    val_roc_auc_score = sklearn.metrics.roc_auc_score(sub_val_y, val_y_pred_proba)
-    val_f1_score = sklearn.metrics.f1_score(sub_val_y, val_y_pred, pos_label=1)
-
-    auc_scores.append(val_roc_auc_score)
-    f1_scores.append(val_f1_score)
-
+    val_roc_auc_score, val_f1_score = evaluate_model(val_X, val_y_true, model)
     print("VAL ROC AUC:", val_roc_auc_score, "VAL F1 Score:", val_f1_score)
 
-    if val_roc_auc_score < 0.897:
-        return -100
+    low_auc_penalty = 10 if val_roc_auc_score < 0.9 else 0
 
     return (
-        0.7 * np.mean(auc_scores) + 0.3 * np.mean(f1_scores) - (10 * np.std(auc_scores)) - (10 * np.std(f1_scores))
+        0.7 * np.mean(auc_scores)
+        + 0.3 * np.mean(f1_scores)
+        - (10 * np.std(auc_scores))
+        - (10 * np.std(f1_scores))
+        - low_auc_penalty
     )
 
 
