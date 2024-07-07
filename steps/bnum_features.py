@@ -83,11 +83,23 @@ def call_cnt_out_metrics(group, agg_data):
         metrics["vodafone_topic_call_cnt_out_sum"], bnum_topic_sum
     )
     metrics["finance_topic_call_cnt_out_sum"] = bnum_topic_agg_sum.get("finance_topic", 0)
-
     metrics["rescue_numbers_call_cnt_out_sum"] = bnum_category_agg_sum.get("rescue_numbers", 0)
+    metrics["bank_numbers_call_cnt_out_sum"] = bnum_category_agg_sum.get("bank_numbers", 0)
+    metrics["fraud_numbers_call_cnt_out_sum"] = bnum_category_agg_sum.get("fraud_numbers", 0)
+    metrics["casual_topic_call_cnt_out_sum"] = bnum_topic_agg_sum.get("casual_topic", 0)
 
     metrics["vodafone_act_call_cnt_out"] = agg_data["vodafone_df"]["call_cnt_out"].sum()
     metrics["casual_act_call_cnt_out"] = agg_data["casual_df"]["call_cnt_out"].sum()
+
+    return metrics
+
+
+def call_cnt_in_metrics(group, agg_data):
+    bnum_topic_agg_sum = agg_data["bnum_topic_agg_sum"]["call_cnt_in"]
+
+    metrics = {}
+
+    metrics["casual_topic_call_cnt_in_sum"] = bnum_topic_agg_sum.get("casual_topic", 0)
 
     return metrics
 
@@ -99,6 +111,9 @@ def call_dur_out_metrics(group, agg_data):
     metrics = {}
 
     metrics["vodafone_topic_call_dur_out_sum"] = bnum_topic_agg_sum.get("vodafone_topic", 0)
+    metrics["finance_topic_call_dur_out_sum"] = bnum_topic_agg_sum.get("finance_topic", 0)
+    metrics["casual_topic_call_dur_out_sum"] = bnum_topic_agg_sum.get("casual_topic", 0)
+    metrics["competitors_topic_call_dur_out_sum"] = bnum_topic_agg_sum.get("competitors_topic", 0)
     metrics["fraud_numbers_call_dur_out_sum"] = bnum_category_agg_sum.get("fraud_numbers", 0)
 
     metrics["vodafone_act_call_dur_out"] = agg_data["vodafone_df"]["call_dur_out"].sum()
@@ -142,7 +157,7 @@ def cnt_sms_in_metrics(group, agg_data):
     metrics["other_cnt_sms_in_sum"] = bnum_category_agg_sum.get("other", 0)
     metrics["bank_companies_cnt_sms_in_sum"] = bnum_category_agg_sum.get("bank_companies", 0)
     metrics["vodafone_services_cnt_sms_in_sum"] = bnum_category_agg_sum.get("vodafone_services", 0)
-    metrics["messengers_companies_cnt_sms_in_sum"] = bnum_category_agg_sum.get("messengers_companies", 0)
+    metrics["vodafone_survey_cnt_sms_in_sum"] = bnum_category_agg_sum.get("vodafone_survey", 0)
 
     metrics["other_cnt_sms_in_sum_share"] = calculate_share(metrics["other_cnt_sms_in_sum"], bnum_category_sum)
     metrics["vodafone_services_cnt_sms_in_sum_share"] = calculate_share(
@@ -151,26 +166,18 @@ def cnt_sms_in_metrics(group, agg_data):
     metrics["bank_companies_cnt_sms_in_sum_share"] = calculate_share(
         metrics["bank_companies_cnt_sms_in_sum"], bnum_category_sum
     )
-    metrics["messengers_companies_cnt_sms_in_sum_share"] = calculate_share(
-        metrics["messengers_companies_cnt_sms_in_sum"], bnum_category_sum
-    )
 
     metrics["casual_topic_cnt_sms_in_sum"] = bnum_topic_agg_sum.get("casual_topic", 0)
-    metrics["vodafone_topic_cnt_sms_in_sum"] = bnum_topic_agg_sum.get("vodafone_topic", 0)
-    metrics["messengers_topic_cnt_sms_in_sum"] = bnum_topic_agg_sum.get("messengers_topic", 0)
     metrics["finance_topic_cnt_sms_in_sum"] = bnum_topic_agg_sum.get("finance_topic", 0)
 
     metrics["casual_topic_cnt_sms_in_sum_share"] = calculate_share(
         metrics["casual_topic_cnt_sms_in_sum"], bnum_topic_sum
     )
-    metrics["vodafone_topic_cnt_sms_in_sum_share"] = calculate_share(
-        metrics["vodafone_topic_cnt_sms_in_sum"], bnum_topic_sum
+    metrics["vodafone_services_cnt_sms_in_sum_share"] = calculate_share(
+        metrics["vodafone_services_cnt_sms_in_sum"], bnum_category_sum
     )
     metrics["finance_topic_cnt_sms_in_sum_share"] = calculate_share(
         metrics["finance_topic_cnt_sms_in_sum"], bnum_topic_sum
-    )
-    metrics["messengers_topic_cnt_sms_in_sum_share"] = calculate_share(
-        metrics["messengers_topic_cnt_sms_in_sum"], bnum_topic_sum
     )
 
     metrics["vodafone_act_cnt_sms_in"] = agg_data["vodafone_df"]["cnt_sms_in"].sum()
@@ -198,6 +205,7 @@ def build_user_bnum_metrics_group(group):
     metrics = {
         "abon_id": group.iloc[0].abon_id,
         **call_cnt_out_metrics(group, agg_data),
+        **call_cnt_in_metrics(group, agg_data),
         **call_dur_out_metrics(group, agg_data),
         **cnt_sms_out_metrics(group, agg_data),
         **cnt_sms_in_metrics(group, agg_data),
