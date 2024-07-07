@@ -27,7 +27,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "fixing_overfitting_v24"
+version = "fixing_overfitting_v26"
 
 with open("cache/train_data_pipeline.pkl", "rb") as f:
     train_data = pickle.load(f)
@@ -58,9 +58,10 @@ sub_train_x, sub_val_x, sub_train_y, sub_val_y = train_test_split(
     train_data.target,
     test_size=0.2,
     random_state=SEED,
+    stratify=train_data.target,
 )
 
-sub_train_data = sub_train_x
+sub_train_data = sub_train_x.copy()
 sub_train_data["target"] = sub_train_y
 
 resampled_x, resampled_y = oversampling(sub_train_data, size=0.6)
@@ -87,12 +88,12 @@ def objective(trial):
         "lambda_l1": trial.suggest_int("lambda_l1", 4, 12),
         "lambda_l2": trial.suggest_int("lambda_l2", 4, 12),
         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.06, log=True),
-        "num_leaves": trial.suggest_int("num_leaves", 40, 75, step=5),
+        "num_leaves": trial.suggest_int("num_leaves", 40, 65, step=2),
         "feature_fraction": trial.suggest_float("feature_fraction", 0.2, 1.0),
         "bagging_fraction": trial.suggest_float("bagging_fraction", 0.2, 1.0),
         "max_depth": trial.suggest_int("max_depth", 9, 15),
         "min_child_samples": trial.suggest_int("min_child_samples", 10, 150, step=10),
-        "n_estimators": trial.suggest_int("n_estimators", 100, 400, step=50),
+        "n_estimators": trial.suggest_int("n_estimators", 100, 350, step=25),
         "drop_rate": trial.suggest_categorical("drop_rate", [0.1, 0.2, 0.3, 0.4]),
     }
 
@@ -108,7 +109,7 @@ def objective(trial):
     )
 
     def evaluate_model(X, y_true, model, threshold=0.5):
-        y_pred_proba = model.predict(X, best_iteration=model.best_iteration)
+        y_pred_proba = model.predict(X, num_iteration=model.best_iteration)
         y_pred = (y_pred_proba >= threshold).astype(int)
         roc_auc = sklearn.metrics.roc_auc_score(y_true, y_pred_proba)
         f1 = sklearn.metrics.f1_score(y_true, y_pred, pos_label=1)

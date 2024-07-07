@@ -68,6 +68,11 @@ print("Test data shape:", test_data.shape)
 
 resampled_x, resampled_y, valid_x, valid_y = oversampling(train_data, test_data)
 
+scaler = preprocessing.StandardScaler()
+resampled_x = scaler.fit(resampled_x)
+resampled_x = scaler.transform(resampled_x)
+valid_x = scaler.transform(valid_x)
+
 dtrain = lgb.Dataset(resampled_x, label=resampled_y)
 dvalid = lgb.Dataset(valid_x, label=valid_y, reference=dtrain)
 
