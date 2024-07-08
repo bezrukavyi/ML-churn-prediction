@@ -27,7 +27,7 @@ SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-version = "fixing_overfitting_v26"
+version = "fixing_overfitting_new_features_v1"
 
 with open("cache/train_data_pipeline.pkl", "rb") as f:
     train_data = pickle.load(f)
@@ -64,7 +64,7 @@ sub_train_x, sub_val_x, sub_train_y, sub_val_y = train_test_split(
 sub_train_data = sub_train_x.copy()
 sub_train_data["target"] = sub_train_y
 
-resampled_x, resampled_y = oversampling(sub_train_data, size=0.6)
+resampled_x, resampled_y = oversampling(sub_train_data, size=0.7)
 
 dtrain = lgb.Dataset(resampled_x, label=resampled_y)
 dvalid = lgb.Dataset(sub_val_x, label=sub_val_y)
