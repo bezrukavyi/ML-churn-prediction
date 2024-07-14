@@ -12,10 +12,10 @@ task_total = 0
 def generate_train_bnum_feature(dataframe):
     cache_key = "cache/bnum_features(short)_train.pkl"
 
-    bnum_new_df = generate_bnum_features(LoadData().df_train_fe, LoadData().df_train_bnum)
+    # bnum_new_df = generate_bnum_features(LoadData().df_train_fe, LoadData().df_train_bnum)
 
-    with open(cache_key, "wb") as f:
-        pickle.dump(bnum_new_df, f)
+    # with open(cache_key, "wb") as f:
+    #     pickle.dump(bnum_new_df, f)
 
     with open(cache_key, "rb") as f:
         bnum_new_df = pickle.load(f)
@@ -27,10 +27,10 @@ def generate_train_bnum_feature(dataframe):
 def generate_test_bnum_feature(dataframe):
     cache_key = "cache/bnum_features(short)_test.pkl"
 
-    bnum_new_df = generate_bnum_features(LoadData().df_test_fe, LoadData().df_test_bnum)
+    # bnum_new_df = generate_bnum_features(LoadData().df_test_fe, LoadData().df_test_bnum)
 
-    with open(cache_key, "wb") as f:
-        pickle.dump(bnum_new_df, f)
+    # with open(cache_key, "wb") as f:
+    #     pickle.dump(bnum_new_df, f)
 
     with open(cache_key, "rb") as f:
         bnum_new_df = pickle.load(f)

@@ -9,10 +9,10 @@ from transform.load_data import LoadData
 def generate_train_fe_feature(dataframe):
     cache_key = "cache/fe_features(short)_train.pkl"
 
-    fe_new_df = generate_fe_features(LoadData().df_train_fe)
+    # fe_new_df = generate_fe_features(LoadData().df_train_fe)
 
-    with open(cache_key, "wb") as f:
-        pickle.dump(fe_new_df, f)
+    # with open(cache_key, "wb") as f:
+    #     pickle.dump(fe_new_df, f)
 
     with open(cache_key, "rb") as f:
         fe_new_df = pickle.load(f)
@@ -24,10 +24,10 @@ def generate_train_fe_feature(dataframe):
 def generate_test_fe_feature(dataframe):
     cache_key = "cache/fe_features(short)_test.pkl"
 
-    fe_new_df = generate_fe_features(LoadData().df_test_fe)
+    # fe_new_df = generate_fe_features(LoadData().df_test_fe)
 
-    with open(cache_key, "wb") as f:
-        pickle.dump(fe_new_df, f)
+    # with open(cache_key, "wb") as f:
+    #     pickle.dump(fe_new_df, f)
 
     with open(cache_key, "rb") as f:
         fe_new_df = pickle.load(f)
