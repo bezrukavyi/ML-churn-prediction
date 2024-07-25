@@ -99,7 +99,7 @@ def objective(trial):
 
     print("Params:", params)
 
-    f1_scores = []
+    fbeta_scores = []
     auc_scores = []
 
     model = lgb.train(
@@ -112,32 +112,32 @@ def objective(trial):
         y_pred_proba = model.predict(X, num_iteration=model.best_iteration)
         y_pred = (y_pred_proba >= threshold).astype(int)
         roc_auc = sklearn.metrics.roc_auc_score(y_true, y_pred_proba)
-        f1 = sklearn.metrics.f1_score(y_true, y_pred, pos_label=1)
+        fbeta = sklearn.metrics.fbeta_score(y_true, y_pred, beta=0.5)
 
         auc_scores.append(roc_auc)
-        f1_scores.append(f1)
+        fbeta_scores.append(fbeta)
 
-        return roc_auc, f1
+        return roc_auc, fbeta
 
     train_X = sub_train_x[resampled_x.columns]
     train_y_true = sub_train_y
 
-    train_roc_auc_score, train_f1_score = evaluate_model(train_X, train_y_true, model)
-    print("ROC AUC:", train_roc_auc_score, "F1 Score:", train_f1_score)
+    train_roc_auc_score, train_fbeta_score = evaluate_model(train_X, train_y_true, model)
+    print("ROC AUC:", train_roc_auc_score, "F1 Score:", train_fbeta_score)
 
     val_X = sub_val_x[resampled_x.columns]
     val_y_true = sub_val_y
 
-    val_roc_auc_score, val_f1_score = evaluate_model(val_X, val_y_true, model)
-    print("VAL ROC AUC:", val_roc_auc_score, "VAL F1 Score:", val_f1_score)
+    val_roc_auc_score, val_fbeta_score = evaluate_model(val_X, val_y_true, model)
+    print("VAL ROC AUC:", val_roc_auc_score, "VAL F1 Score:", val_fbeta_score)
 
     low_auc_penalty = 10 if val_roc_auc_score < 0.9 else 0
 
     return (
-        0.7 * np.mean(auc_scores)
-        + 0.3 * np.mean(f1_scores)
+        0.6 * np.mean(auc_scores)
+        + 0.4 * np.mean(fbeta_scores)
         - (10 * np.std(auc_scores))
-        - (10 * np.std(f1_scores))
+        - (10 * np.std(fbeta_scores))
         - low_auc_penalty
     )
 

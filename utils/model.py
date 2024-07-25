@@ -36,6 +36,10 @@ class Metrics:
         auc = sklearn.metrics.roc_auc_score(y_true, y_pred_proba)
         print(f"AUC: {auc:.3f}")
 
+        # FBeta Score
+        auc = sklearn.metrics.fbeta_score(y_true, y_pred, beta=0.5)
+        print(f"F Beta score: {auc:.3f}")
+
         matthews_corrcoef = sklearn.metrics.matthews_corrcoef(y_true, y_pred)
         print(f"Matthews Correlation Coefficient: {matthews_corrcoef:.3f}")
 
