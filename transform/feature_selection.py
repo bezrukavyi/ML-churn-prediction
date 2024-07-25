@@ -56,6 +56,7 @@ FEATURES = [
     "conn_out_uniq_cnt_mea_mnt1",
     "active_gba",
     "non_accum_internet_vol_max_diff",
+    "non_accum_internet_vol_mea_total",
     # "vodafone_services_cnt_sms_in_sum_share",
     # "vodafone_services_cnt_sms_in_sum",
     # "voice_in_td_cnt_max_diff",
