@@ -1,1 +1,0 @@
-{"random_state": 42, "n_jobs": 4, "lambda": 1.3547205987131141e-05, "alpha": 5.780111372861284e-08, "subsample": 0.883935259782509, "colsample_bytree": 0.916554448323184, "max_depth": 19, "min_child_weight": 5, "eta": 0.214441168269464, "gamma": 3.570691231982585e-05, "grow_policy": "lossguide"}
