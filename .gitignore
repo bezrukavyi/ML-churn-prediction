@@ -5,3 +5,5 @@ init.sql
 initdb
 train_data.pkl
 cache
+assets
+.ipynb_checkpoints
